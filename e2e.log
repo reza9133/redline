@@ -1,0 +1,67 @@
+
+> redline@1.0.0 e2e
+> node e2e/live-e2e.mjs
+
+Redline live E2E  run=mw9epl1u  network=GenLayer Studionet
+
+[S01] Accounts created and funded ... PASS (alice 0x549603566F861D10C70601Ac2077eEA308cabc54, bob 0x29e1707e016dec94ECbB08EFF4f8e0581c38DD5a) [0.4s]
+[S02] Fixtures are reachable and match the local files ... PASS (base https://raw.githubusercontent.com/reza9133/redline/main/e2e/fixtures) [1.5s]
+[S03] Contract deployed (or an existing one reused) ... 
+    deploying contracts/redline.py to Studionet ...
+    deploy tx 0xfb896ca53c114169eaba0e72eeff9cfe3637833de1bd726aeedeb9f056d04e5bPASS (deployed 0xD27E9FdddFe71C2abCeafDAf56d28962be175dAE) [4.7s]
+[S04] get_version is 1.x and get_limits matches the source constants ... PASS (version 1.0.0) [2.3s]
+[R01] Rejected: private IPv4 literal ... GenLayer RPC error (gen_call): execution failed
+PASS (rejected (control call passes; node hides the reason)) [4.5s]
+[R02] Rejected: cloud metadata address (on-chain: the reason is visible in the receipt) ... PASS (on-chain: state unchanged; reason "url must be a public https:// URL (no private IPs, odd ports, or useri") [47.0s]
+[R03] Rejected: carrier-grade NAT ... GenLayer RPC error (gen_call): execution failed
+PASS (rejected (control call passes; node hides the reason)) [1.4s]
+[R04] Rejected: hex-spelled loopback ... GenLayer RPC error (gen_call): execution failed
+PASS (rejected (control call passes; node hides the reason)) [1.3s]
+[R05] Rejected: non-443 port ... GenLayer RPC error (gen_call): execution failed
+PASS (rejected (control call passes; node hides the reason)) [1.2s]
+[R06] Rejected: userinfo in a fetchable URL ... GenLayer RPC error (gen_call): execution failed
+PASS (rejected (control call passes; node hides the reason)) [1.2s]
+[R07] Rejected: plain http on a fetchable host ... GenLayer RPC error (gen_call): execution failed
+PASS (rejected (control call passes; node hides the reason)) [1.2s]
+[R08] Rejected: localhost ... GenLayer RPC error (gen_call): execution failed
+PASS (rejected (control call passes; node hides the reason)) [1.2s]
+[R09] Rejected: name too short ... GenLayer RPC error (gen_call): execution failed
+PASS (rejected (control call passes; node hides the reason)) [1.3s]
+[R10] Rejected: unknown kind ... GenLayer RPC error (gen_call): execution failed
+PASS (rejected (control call passes; node hides the reason)) [1.2s]
+[R11] Rejected: blank publisher ... GenLayer RPC error (gen_call): execution failed
+PASS (rejected (control call passes; node hides the reason)) [1.2s]
+[R12] Rejected: prompt delimiters in the name ... GenLayer RPC error (gen_call): execution failed
+PASS (rejected (control call passes; node hides the reason)) [1.2s]
+[H01] D0 registered: baseline revision exists ... PASS (document #1) [9.9s]
+[C01] Immediate second revision is blocked by the cooldown ... PASS (on-chain: state unchanged; reason "revision cooldown still active; try again in a minute") [48.3s]
+[H02] D2 and D3 registered ... PASS (documents #2, #3) [50.9s]
+[H03] D1 registered: baseline hash chain recomputes ... PASS (document #4, head fd4ae8a5e92f...) [20.4s]
+[H04] Baseline text equals the fixture as rendered by the validators ... PASS [0.0s]
+[H05] Duplicate registrations are refused whatever the spelling ... GenLayer RPC error (gen_call): execution failed
+PASS (rejected (control call passes; node hides the reason)) [2.2s]
+[H06] Lookup views: find_document, list_owner_documents, list_documents ... PASS (4 documents on the contract) [35.9s]
+[G01] A page with too little text cannot be tracked ... PASS (on-chain: state unchanged; reason "the page has too little readable text to track (at least 120 character") [17.1s]
+[I01] A page identical to the latest revision is refused ... PASS (on-chain: state unchanged; reason "the page is identical to the latest recorded revision") [43.0s]
+[F01] A capitalisation-only change is recorded without a model verdict ... PASS (revision #5) [29.1s]
+[M01] Adverse amendment is rated worse, with a verbatim quote, and flagged HIGH ... PASS (MUCH_WORSE/HIGH, quote "All disputes must be settled by binding arbitratio") [54.1s]
+[A01] Appeal by another account runs a fresh consensus round ... PASS (CONFIRMED) [19.6s]
+[A02] A second appeal, the baseline and a format-only revision cannot be appealed ... PASS (3 refusals confirmed) [90.4s]
+[M02] Reverting the amendment is rated better; the hash chain still recomputes ... PASS (MUCH_BETTER/MEDIUM) [35.8s]
+[M03] Cosmetic edit (from the original text) is judged and stays quiet ... 
+    (waiting 41s for the revision cooldown of document #4) PASS (NEUTRAL/LOW) [65.1s]
+[N01] A hostile page is flagged; the deterministic guard holds whatever the model does ... PASS (MUCH_WORSE/HIGH, silent false) [46.2s]
+[P01] A non-owner cannot point the document at another site ... PASS (on-chain: state unchanged; reason "only the document owner may point it at a different site (web.archive.") [21.5s]
+[P02] A non-owner cannot commit a full rewrite ... PASS (on-chain: state unchanged; reason "too little of the previous text survives in this page; only the docume") [42.7s]
+[P03] The owner may commit a quiet rewrite; it is flagged and never LOW ... PASS (NEUTRAL/MEDIUM, retained 1208bp, churn 697bp) [59.9s]
+[V01] Pagination and unknown ids behave ... GenLayer RPC error (gen_call): execution failed
+GenLayer RPC error (gen_call): execution failed
+GenLayer RPC error (gen_call): execution failed
+GenLayer RPC error (gen_call): execution failed
+PASS (4 revisions on D1) [16.2s]
+[C02] Contract-wide counters equal a recount from the stored records ... PASS (4 documents, 10 revisions) [31.6s]
+[C03] Every document's hash chain recomputes ... PASS (10 revisions verified) [17.3s]
+[C04] This run changed the totals as expected ... PASS (+4 documents, +10 revisions) [1.2s]
+
+39 passed, 0 warnings, 0 skipped, 0 failed
+report: reports/e2e-latest.md
