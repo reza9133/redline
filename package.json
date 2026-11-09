@@ -1,0 +1,24 @@
+{
+  "name": "redline",
+  "version": "1.0.0",
+  "private": true,
+  "type": "module",
+  "description": "Redline: a tamper-evident amendment ledger for the fine print, as a GenLayer intelligent contract.",
+  "scripts": {
+    "test:contract": "python3 -m unittest discover -s tests/contract -q",
+    "mutation": "python3 scripts/mutation_check.py",
+    "rehearsal": "node --import ./tests/rehearsal/register.mjs e2e/live-e2e.mjs",
+    "deploy": "node e2e/deploy.mjs",
+    "e2e": "node e2e/live-e2e.mjs",
+    "e2e:quick": "node e2e/live-e2e.mjs --quick",
+    "check": "python3 -m unittest discover -s tests/contract -q && node --check e2e/live-e2e.mjs && node --check e2e/deploy.mjs && node --check e2e/lib.mjs && node --check e2e/throttle.mjs",
+    "rehearsal:mutants": "python3 scripts/rehearsal_mutants.py"
+  },
+  "dependencies": {
+    "genlayer-js": "1.2.0",
+    "viem": "2.56.3"
+  },
+  "engines": {
+    "node": ">=20.6"
+  }
+}

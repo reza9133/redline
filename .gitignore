@@ -1,0 +1,9 @@
+node_modules/
+__pycache__/
+*.pyc
+.env
+.DS_Store
+# the latest live report is committed on purpose; timestamped copies are not
+reports/e2e-*-*.md
+reports/e2e-*-*.json
+reports/rehearsal/
