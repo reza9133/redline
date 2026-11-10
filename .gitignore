@@ -7,3 +7,4 @@ __pycache__/
 reports/e2e-*-*.md
 reports/e2e-*-*.json
 reports/rehearsal/
+e2e.log

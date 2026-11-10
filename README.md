@@ -194,21 +194,32 @@ Revision `effect` values: `BASELINE` (revision 0), `MUCH_BETTER`, `BETTER`, `NEU
 
 ## What has been verified, and how
 
-This project was built and debugged **without access to Studionet or the real GenVM SDK**, so be precise about
-what that means:
+The contract was written and debugged offline first (a strict local SDK stand-in, mutation testing and an offline
+rehearsal of the live script), then confirmed by a real run on Studionet.
 
 | Layer | Result |
 | --- | --- |
-| 215 unit tests against a *strict* SDK stand-in (storage forbidden inside leader/validator blocks, explicit `u256`, copy-on-store, full rollback on revert, calldata-encodable results only, …) | pass |
+| **Live end-to-end run on Studionet** (`npm run e2e`) | **PASS: 39 / 39 steps, 0 warnings, 0 failures, 13.9 min**. Contract `0xD27E9FdddFe71C2abCeafDAf56d28962be175dAE`, 2026-11-09. Full report with one explorer link per transaction: [`reports/e2e-latest.md`](reports/e2e-latest.md) |
+| 215 unit tests against a *strict* SDK stand-in (storage forbidden inside leader/validator blocks, explicit `u256`, copy-on-store, full rollback on revert, calldata-encodable results only, ...) | pass |
 | Mutation check: 257 deliberate bugs injected into the contract | **257 / 257 caught** |
-| Offline rehearsal of the unmodified live script, 4 fake-model behaviours (truthful, obedient, lazy, flipping) + quick + strict | pass (obedient / lazy / flipping only produce `WARN` on MODEL steps, as designed) |
+| Offline rehearsal of the unmodified live script with 4 fake-model behaviours (truthful, obedient, lazy, flipping) + quick + strict | pass (obedient / lazy / flipping only produce `WARN` on MODEL steps, as designed) |
 | Broken contracts fed to the live script | **28 / 28 caught** |
-| Live run on Studionet | **not run by the author. You run it (`npm run e2e`).** |
 
-The stand-in is stricter than the real SDK where bugs usually hide, but it is not the real GenVM. API usage is
-limited to calls that an already-deployed Studionet project uses (`gl.vm.run_nondet_unsafe`,
-`gl.nondet.web.render`, `gl.nondet.exec_prompt`, storage dataclasses, `TreeMap`, `DynArray`, events), and the
-`Depends` pin on line 1 is copied from that project. If Studionet has moved to a newer SDK, update that hash.
+What the live run showed on the real network:
+
+* Every HARD step passed: URL rules, cooldown, identical-page refusal, the case-only change recorded with no model
+  call, owner / site / rewrite rules, the hash chain recomputed with `viem`, and a full recount of every counter.
+* The validators' models behaved as expected: forced arbitration rated `MUCH_WORSE` / `HIGH` with a verbatim quote,
+  the appeal was `CONFIRMED`, a revert to the original was `MUCH_BETTER`, a wording-only edit was `NEUTRAL` / `LOW`.
+* The network exposes the contract's own reason in the receipt of a rejected **transaction**; only simulation
+  (`gen_call`) hides it, which is why simulated rejections are paired with a control call.
+
+What the live run did **not** exercise, because the real models behaved well: the silent-rewrite guard against a
+model that obeys a hostile page (the model rated the injection attempt `MUCH_WORSE`), and an appeal that *revises*
+a verdict (it was confirmed). Both paths are covered by the unit tests and the offline rehearsal only.
+
+The stand-in is stricter than the real SDK where bugs usually hide, but it is not the real GenVM. If Studionet moves
+to a newer SDK, update the `Depends` pin on line 1 of the contract.
 
 ## Troubleshooting
 
