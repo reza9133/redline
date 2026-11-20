@@ -4,8 +4,8 @@ Four layers, from cheapest to most authoritative. The live run on Studionet is t
 exist so that it finds as little as possible.
 
 ```
-npm run check              layer 1   215 unit tests          ~10 s    no network, no dependencies
-npm run mutation           layer 2   257 injected bugs       ~15 min  (resumable)
+npm run check              layer 1   226 unit tests          ~10 s    no network, no dependencies
+npm run mutation           layer 2   262 injected bugs       ~15 min  (resumable)
 npm run rehearsal          layer 3   the live script, offline ~2 min
 npm run rehearsal:mutants  layer 3b  28 broken contracts vs the live script
 npm run e2e                layer 4   Studionet             15-25 min
@@ -39,7 +39,7 @@ forged leader result), which is how `test_validators.py` and `test_defense.py` w
 | `test_engine.py` | sentence splitting, diff, topics, plan kinds, ratios, severity table, quotes, hygiene |
 | `test_registration.py` | registration, normalisation, views, pagination, limits, timestamps |
 | `test_revisions.py` | the append pipeline, policy, guards, cooldown, rewrites, failure modes, adversarial pages |
-| `test_validators.py` | consensus: tolerance matrix, forged leaders, failure reports, cheap rejections |
+| `test_validators.py` | consensus: exact-agreement matrix, forged leaders, failure reports, cheap rejections |
 | `test_appeal.py` | confirmed / revised appeals, counters, floors, failures |
 | `test_defense.py` | the contract refuses forged results even if consensus accepted them |
 | `test_fixtures.py` | deterministic facts of every e2e fixture + a replay of the live script's story |
@@ -49,7 +49,7 @@ Run one file: `python3 -m unittest discover -s tests/contract -p "test_engine.py
 
 ## Layer 2: mutation check
 
-A green suite proves little if it would stay green with bugs in the code. `scripts/mutation_check.py` applies 257
+A green suite proves little if it would stay green with bugs in the code. `scripts/mutation_check.py` applies 262
 deliberate, exact-text mutations (flip `<` to `<=`, drop a rule, swap a counter, break the chain formula, widen a
 mask, ...) to a copy of the contract and requires the suite to fail for each one. A mutant that does not even compile is
 reported as invalid.

@@ -21,7 +21,7 @@ itself, in plain Python, and shows the model **only the sentences that changed**
         model sees ONLY the changed sentences ──► rates the effect on the reader
         MUCH_BETTER · BETTER · NEUTRAL · WORSE · MUCH_WORSE   + a verbatim quote
                                    │
-        consensus = "at most one step apart"   (bounded disagreement, not strict equality)
+        consensus = EXACT agreement on the label that will be stored (no tolerance band)
                                    │
         deterministic rules the model never decides:
         no quote → no verdict · silent-rewrite guard · severity · rewrite lock · hash chain
@@ -36,7 +36,7 @@ makes its inputs checkable, and lets the contract overrule it with arithmetic.
 | Idea | What Redline does |
 | --- | --- |
 | Input to the model | Only the removed / added sentences (capped; sentences that touch sensitive topics are shown first, so a flood of trivial edits cannot hide the real change). |
-| Consensus | **Bounded disagreement**: a validator accepts the leader when its own rating is at most one step away on the five-point scale. `NEUTRAL` vs `WORSE` agree, `BETTER` vs `WORSE` never do. |
+| Consensus | **Exact agreement on the stored verdict**: a validator accepts the leader only when its own independent rating is the *identical* label, and the effect that would be recorded after the "no quote, no verdict" rule is the same too. There is no tolerance band, so `NEUTRAL` can never vouch for `BETTER` or `WORSE`. Effect, severity, the silent flag and every counter are functions of that one agreed label. |
 | Evidence | A quote must be a verbatim piece of **one changed sentence**, checked in plain Python by every validator. No grounded quote, no verdict: it is stored as `UNCLEAR`. |
 | Distrusting the model | **Silent-rewrite guard**: a `NEUTRAL` rating on a redline that touches sensitive topics (or churns ≥ 25 % of the words) is flagged and raised to `MEDIUM`. Severity is computed, never asked. |
 | Formatting-only edits | If no sentence differs once case is ignored, the revision is recorded as `NEUTRAL` **without calling the model at all**. |
@@ -73,10 +73,10 @@ contracts/redline.py        the intelligent contract (single file, ~1,400 lines)
 e2e/deploy.mjs              deploy to Studionet
 e2e/live-e2e.mjs            live end-to-end run against Studionet (39 steps)
 e2e/fixtures/*.txt          the pages the live run tracks (serve them from a public repo)
-tests/contract/             215 unit tests (Python stdlib unittest, no downloads)
+tests/contract/             226 unit tests (Python stdlib unittest, no downloads)
 tests/standin/              a strict local stand-in for the GenVM SDK + a tiny local chain
 tests/rehearsal/            offline rehearsal: runs the UNMODIFIED live script without Studionet
-scripts/mutation_check.py   injects 257 deliberate bugs; the tests must catch every one
+scripts/mutation_check.py   injects 262 deliberate bugs; the tests must catch every one
 scripts/rehearsal_mutants.py  feeds broken contracts to the live script; it must catch them
 docs/                       ARCHITECTURE.md · SECURITY.md · TESTING.md
 ```
@@ -87,7 +87,7 @@ Requirements: Python 3 for the tests (nothing to install; developed and tested o
 
 ```bash
 npm install          # only needed for deploy / live e2e (genlayer-js, viem)
-npm run check        # 215 unit tests + syntax check of the scripts (~10 s)
+npm run check        # 226 unit tests + syntax check of the scripts (~10 s)
 npm run rehearsal    # the live script against a local stand-in, no network (~2 min)
 ```
 
@@ -200,8 +200,8 @@ rehearsal of the live script), then confirmed by a real run on Studionet.
 | Layer | Result |
 | --- | --- |
 | **Live end-to-end run on Studionet** (`npm run e2e`) | **PASS: 39 / 39 steps, 0 warnings, 0 failures, 13.9 min**. Contract `0xD27E9FdddFe71C2abCeafDAf56d28962be175dAE`, 2026-11-09. Full report with one explorer link per transaction: [`reports/e2e-latest.md`](reports/e2e-latest.md) |
-| 215 unit tests against a *strict* SDK stand-in (storage forbidden inside leader/validator blocks, explicit `u256`, copy-on-store, full rollback on revert, calldata-encodable results only, ...) | pass |
-| Mutation check: 257 deliberate bugs injected into the contract | **257 / 257 caught** |
+| 226 unit tests against a *strict* SDK stand-in (storage forbidden inside leader/validator blocks, explicit `u256`, copy-on-store, full rollback on revert, calldata-encodable results only, ...) | pass |
+| Mutation check: 262 deliberate bugs injected into the contract | **262 / 262 caught** |
 | Offline rehearsal of the unmodified live script with 4 fake-model behaviours (truthful, obedient, lazy, flipping) + quick + strict | pass (obedient / lazy / flipping only produce `WARN` on MODEL steps, as designed) |
 | Broken contracts fed to the live script | **28 / 28 caught** |
 

@@ -1,6 +1,6 @@
 {
   "name": "redline",
-  "version": "1.0.0",
+  "version": "1.0.1",
   "private": true,
   "type": "module",
   "description": "Redline: a tamper-evident amendment ledger for the fine print, as a GenLayer intelligent contract.",

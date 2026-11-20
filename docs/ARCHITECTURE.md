@@ -58,7 +58,8 @@ invariant test recomputes every counter from the stored records after every oper
    unchanged / blocked / format_only: accept (nothing else to judge)
    judge: leader's effect must be on the scale
           leader's quote must be verbatim in ONE changed sentence of MY plan     (plain Python)
-          my own model rating must be within one step of the leader's            (bounded disagreement)
+          my own model rating must be IDENTICAL to the leader's                   (exact agreement)
+          the effect that would be recorded (after no-quote-no-verdict) must match   (same stored outcome)
    ```
 5. **After consensus** the contract re-derives the plan itself and re-checks the hash, the kind, the rating and
    the quote (defence in depth, see `tests/contract/test_defense.py`), then applies the policy:
@@ -67,14 +68,25 @@ invariant test recomputes every counter from the stored records after every oper
 6. Persist the revision, the text, the redline; extend the hash chain; update the document; move counters;
    emit `RevisionRecorded`.
 
-### Why "bounded disagreement"
+### Why exact agreement on the stored verdict
 
-Strict equality across independent LLMs makes a five-point scale unusable: honest validators would disagree on
-`WORSE` versus `MUCH_WORSE` all day and rounds would never converge. Accepting "at most one step apart" keeps
-liveness for honest models while keeping the extremes apart: `NEUTRAL` can never be pushed through against a
-`MUCH_WORSE` validator, and `BETTER` can never pass against `WORSE`. The leader's rating is the one recorded, so
-the worst a leader can do is shift a rating by one step, and the deterministic policy (quote requirement,
-silent-rewrite guard, severity) limits what even that can achieve.
+The leader's label is what gets recorded, and everything material is a function of it: the stored `effect`, the
+computed `severity`, the silent-rewrite flag and every counter (`better` / `neutral` / `worse`, `high`, ...).
+A tolerance band ("at most one step apart") would let a validator whose own verdict is `NEUTRAL` vouch for a leader
+that says `BETTER` *or* `WORSE`, so the stored outcome would not be bound by what the validators independently
+concluded. Consensus is therefore exact:
+
+* the leader's label must be the very label this validator reached on its own (no neighbours);
+* the effect that will actually be recorded must match as well. "No quote, no verdict" turns a rating without a
+  grounded quote into `UNCLEAR`, so a leader without a grounded quote is only accepted by a validator that has none
+  either. A validator may rely on a leader quote it verified in Python, but it never invents one for the leader;
+* everything else that is stored comes from deterministic code over the redline the validator recomputed itself
+  (plan, hash, snapshot, kind), so it is identical on both sides by construction. Only the one-sentence `summary`
+  is the leader's free text; it never feeds severity, flags or counters.
+
+Exactness costs some liveness when honest models disagree on a close call: such a round fails and is retried
+with another leader instead of recording a verdict nobody agreed on. That is the intended trade-off: a verdict
+that changes severity and counters must be one the validators independently reproduced.
 
 ### Why the redline is computed in Python
 

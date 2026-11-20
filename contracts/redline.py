@@ -17,10 +17,15 @@ sentences that changed:
 3. Only the changed sentences go to the model. It rates the net effect on an
    ordinary reader on a five point scale (MUCH_BETTER .. MUCH_WORSE) and must
    quote a changed sentence verbatim.
-4. Consensus is a *bounded disagreement* rule, not strict equality: a validator
-   accepts the leader when its own rating is at most one step away on the
-   scale. A quote must be a verbatim substring of a changed sentence, checked
-   in plain Python by every validator.
+4. Consensus is *exact* on everything the contract will store as the verdict.
+   A validator accepts the leader only when its own independent rating is the
+   very same label on the scale AND the effect that would actually be recorded
+   (after the "no quote, no verdict" rule) is the same too. There is no
+   tolerance band: the effect, the severity, the silent-rewrite flag and every
+   counter are functions of that one agreed label and of the deterministic
+   redline, so no validator can wave through a different material outcome
+   than its own. A quote must be a verbatim substring of a changed sentence,
+   checked in plain Python by every validator.
 5. After consensus, deterministic rules the model never decides apply:
    - no quote, no verdict: a non-NEUTRAL rating without a grounded quote is
      stored as UNCLEAR;
@@ -48,7 +53,7 @@ import typing
 from genlayer import *
 
 
-VERSION = "1.0.0"
+VERSION = "1.0.1"
 
 # ---- verdict vocabulary ---------------------------------------------------
 EFFECT_BASELINE = "BASELINE"
@@ -586,11 +591,37 @@ def _normalize_effect(value: typing.Any) -> typing.Optional[str]:
     return label if label in _SCALE else None
 
 
-def _effects_agree(a: str, b: str) -> bool:
-    """Bounded disagreement: at most one step apart on the five point scale."""
-    if a not in _SCALE or b not in _SCALE:
+def _verdicts_agree(
+    leader_effect: typing.Any,
+    leader_quote: str,
+    judged: dict,
+    added: typing.List[str],
+    removed: typing.List[str],
+) -> bool:
+    """Exact agreement on the verdict the contract is about to store.
+
+    Severity, the silent flag and every counter are computed from the stored effect,
+    so the validator must bind that exact value, not a neighbour of it:
+
+    * the leader's label must be on the scale and IDENTICAL to this validator's own label
+      (no tolerance band: NEUTRAL can never vouch for BETTER or WORSE);
+    * the leader's quote must be verbatim in a changed sentence of THIS validator's plan;
+    * the effect that will be recorded after "no quote, no verdict" must be the same for
+      the leader and for this validator. A leader without a grounded quote is recorded as
+      UNCLEAR, so a validator that did find a grounded quote of its own must not accept it.
+    """
+    if leader_effect not in _SCALE or judged.get("effect") not in _SCALE:
         return False
-    return abs(_SCALE.index(a) - _SCALE.index(b)) <= 1
+    if judged["effect"] != leader_effect:
+        return False
+    if leader_quote and not _quote_ok(leader_quote, added, removed):
+        return False
+    grounded = _ground_quote(leader_quote, added, removed)
+    stored_by_leader = _finalize(str(leader_effect), grounded, "")[0]
+    # the leader's quote is verified above, so this validator may rely on it, but it may
+    # not invent one for the leader: with no grounded quote on either side both are UNCLEAR
+    stored_by_me = _finalize(str(judged["effect"]), str(judged.get("quote", "")) or grounded, "")[0]
+    return stored_by_leader == stored_by_me
 
 
 def _numbered(units: typing.List[str], prefix: str) -> str:
@@ -1064,7 +1095,9 @@ class Redline(gl.Contract):
             judged = _judge(name, kind, publisher, plan["shown_added"], plan["shown_removed"])
             if judged is None:
                 return False
-            return _effects_agree(judged["effect"], str(leader_effect))
+            # Exact agreement on the label that will be stored (effect, severity and
+            # counters all derive from it): no tolerance band.
+            return _verdicts_agree(leader_effect, quote, judged, plan["shown_added"], plan["shown_removed"])
 
         result = gl.vm.run_nondet_unsafe(leader_fn, validator_fn)
 
@@ -1223,7 +1256,7 @@ class Redline(gl.Contract):
             judged = _judge(name, kind, publisher, added, removed)
             if judged is None:
                 return False
-            return _effects_agree(judged["effect"], str(leader_effect))
+            return _verdicts_agree(leader_effect, quote, judged, added, removed)
 
         result = gl.vm.run_nondet_unsafe(leader_fn, validator_fn)
         if not result.get("ok"):
