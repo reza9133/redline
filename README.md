@@ -199,7 +199,7 @@ rehearsal of the live script), then confirmed by a real run on Studionet.
 
 | Layer | Result |
 | --- | --- |
-| **Live end-to-end run on Studionet** (`npm run e2e`) | **PASS: 39 / 39 steps, 0 warnings, 0 failures, 13.9 min**. Contract `0xD27E9FdddFe71C2abCeafDAf56d28962be175dAE`, 2026-11-09. Full report with one explorer link per transaction: [`reports/e2e-latest.md`](reports/e2e-latest.md) |
+| **Live end-to-end run on Studionet** (`npm run e2e`) | **PASS: 39 / 39 steps, 0 warnings, 0 failures, 13.9 min**. Contract `0x9a879A8EB92b7BB3b3f4514E845d24E62e3177E7`, 2026-11-20. Full report with one explorer link per transaction: [`reports/e2e-latest.md`](reports/e2e-latest.md) |
 | 226 unit tests against a *strict* SDK stand-in (storage forbidden inside leader/validator blocks, explicit `u256`, copy-on-store, full rollback on revert, calldata-encodable results only, ...) | pass |
 | Mutation check: 262 deliberate bugs injected into the contract | **262 / 262 caught** |
 | Offline rehearsal of the unmodified live script with 4 fake-model behaviours (truthful, obedient, lazy, flipping) + quick + strict | pass (obedient / lazy / flipping only produce `WARN` on MODEL steps, as designed) |
